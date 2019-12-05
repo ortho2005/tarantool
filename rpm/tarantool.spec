@@ -69,18 +69,21 @@ BuildRequires: libunwind-devel
 %undefine _hardened_build
 %endif
 
-# For tests
-%if (0%{?fedora} >= 22 || 0%{?rhel} == 7)
-BuildRequires: python >= 2.7
-BuildRequires: python-six >= 1.9.0
-BuildRequires: python-gevent >= 1.0
-BuildRequires: python-yaml >= 3.0.9
-%endif
+# Set dependences for tests.
+# Do not install unused Python 3 packages which
+# is default since Fedora 31 and CentOS 8.
 %if (0%{?fedora} >= 31 || 0%{?rhel} >= 8)
 BuildRequires: python2 >= 2.7
 BuildRequires: python2-six >= 1.9.0
 BuildRequires: python2-gevent >= 1.0
 BuildRequires: python2-yaml >= 3.0.9
+%else
+%if (0%{?rhel} != 6)
+BuildRequires: python >= 2.7
+BuildRequires: python-six >= 1.9.0
+BuildRequires: python-gevent >= 1.0
+BuildRequires: python-yaml >= 3.0.9
+%endif
 %endif
 
 Name: tarantool
@@ -160,13 +163,18 @@ make %{?_smp_mflags}
 rm -rf %{buildroot}%{_datarootdir}/doc/tarantool/
 
 %check
+%if "%{_ci}" == "travis"
 %if (0%{?fedora} >= 22 || 0%{?rhel} >= 7)
-# https://github.com/tarantool/tarantool/issues/1227
-echo "self.skip = True" > ./test/app/socket.skipcond
-# https://github.com/tarantool/tarantool/issues/1322
-echo "self.skip = True" > ./test/app/digest.skipcond
-# run a safe subset of the test suite
 cd test && ./test-run.py --force -j 1 unit/ app/ app-tap/ box/ box-tap/ engine/ vinyl/
+%endif
+%else
+%if 0%{?rhel} != 6
+# Run all available test suites except 'replication'
+# which is not currently ready for this testing and
+# has standalone issue for it's enabling:
+# https://github.com/tarantool/tarantool/issues/4798
+TEST_RUN_EXCLUDE='replication/' make test-force
+%endif
 %endif
 
 %pre
