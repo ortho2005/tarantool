@@ -1,6 +1,6 @@
 #!/usr/bin/env tarantool
 test = require("sqltester")
-test:plan(62)
+test:plan(69)
 
 --!./tcltestrunner.lua
 -- 2008 July 15
@@ -94,7 +94,7 @@ test:do_execsql2_test(
         SELECT +tabc.a, -tabc.b, tabc.c, * FROM tabc
     ]], {
         -- <colname-2.3>
-        "+tabc.a",1,"-tabc.b",-2,"C",3,"A",1,"B",2,"C",3
+        "COLUMN_1",1,"COLUMN_2",-2,"C",3,"A",1,"B",2,"C",3
         -- </colname-2.3>
     })
 
@@ -194,7 +194,7 @@ test:do_execsql2_test(
         SELECT +tabc.a, -tabc.b, tabc.c FROM tabc
     ]], {
         -- <colname-3.3>
-        "+tabc.a", 1, "-tabc.b", -2, "C", 3
+        "COLUMN_1",1,"COLUMN_2",-2,"C",3
         -- </colname-3.3>
     })
 
@@ -314,7 +314,7 @@ test:do_execsql2_test(
         SELECT +tabc.a, -tabc.b, tabc.c FROM tabc
     ]], {
         -- <colname-4.3>
-        "+tabc.a", 1, "-tabc.b", -2, "TABC.C", 3
+        "COLUMN_1",1,"COLUMN_2",-2,"TABC.C",3
         -- </colname-4.3>
     })
 
@@ -634,5 +634,69 @@ test:do_catchsql_test(
     "colname-11.3",
     [[ CREATE INDEX t1c ON table1('c'); ]],
     {1, "/Tarantool does not support functional indexes/"})
+
+--
+-- gh-3962: Check auto generated names in different selects.
+--
+test:do_execsql2_test(
+    "colname-12.1",
+    [[
+        VALUES(1, 2, 'aaa');
+    ]], {
+        "COLUMN_1",1,"COLUMN_2",2,"COLUMN_3","aaa"
+    })
+
+test:do_execsql2_test(
+    "colname-12.2",
+    [[
+        SELECT * FROM (VALUES (1+1, 1+1, 'aaa'));
+    ]], {
+        "COLUMN_1",2,"COLUMN_2",2,"COLUMN_3","aaa"
+    })
+
+test:do_execsql2_test(
+    "colname-12.3",
+    [[
+        SELECT 1+1, 1+1, 'aaa';
+    ]], {
+        "COLUMN_1",2,"COLUMN_2",2,"COLUMN_3","aaa"
+    })
+
+test:do_execsql2_test(
+    "colname-12.4",
+    [[
+        SELECT * FROM (SELECT * FROM (VALUES(1, 2, 'aaa'))),
+                      (SELECT * FROM (VALUES(1, 2, 'aaa')))
+    ]], {
+        "COLUMN_1",1,"COLUMN_2",2,"COLUMN_3","aaa","COLUMN_4",1,"COLUMN_5",2,
+        "COLUMN_6","aaa"
+    })
+
+test:do_execsql2_test(
+    "colname-12.5",
+    [[
+        CREATE TABLE j (s1 SCALAR PRIMARY KEY);
+        INSERT INTO j VALUES(1);
+    ]], {})
+
+--
+-- Column named as 's1', because <COLLATE> is skipped in such
+-- expressions.
+--
+test:do_execsql2_test(
+    "colname-12.6",
+    [[
+        SELECT s1 COLLATE "unicode_ci" FROM j;
+    ]], {
+        "S1",1
+    })
+
+test:do_catchsql_test(
+    "colname-12.7",
+    [[
+        SELECT s1 COLLATE "unicode_ci" FROM j ORDER BY column_1;
+    ]], {
+        1,"Can’t resolve field 'COLUMN_1'"
+    })
 
 test:finish_test()
