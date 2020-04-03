@@ -26,3 +26,6 @@ exclude_files = {
 }
 
 files["extra/dist/tarantoolctl.in"] = {ignore = {"212/self", "122", "431"}}
+files["src/lua/*.lua"] = {ignore = {"212/self"}}
+files["src/lua/init.lua"] = {globals = {"dostring"}}
+files["src/lua/swim.lua"] = {ignore = {"431"}}
