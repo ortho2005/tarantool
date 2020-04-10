@@ -102,12 +102,20 @@ vy_history_apply(struct vy_history *history, struct key_def *cmp_def,
 	while (node != NULL) {
 		struct tuple *stmt = vy_apply_upsert(node->stmt, curr_stmt,
 						     cmp_def, format, true);
-		++*upserts_applied;
-		if (curr_stmt != NULL)
-			tuple_unref(curr_stmt);
-		if (stmt == NULL)
-			return -1;
-		curr_stmt = stmt;
+		if (stmt == NULL) {
+			/*
+			 * In case statement hasn't been applied,
+			 * simply skip it ignoring errors (otherwise
+			 * error will appear during tuple read).
+			 */
+			assert(diag_last_error(diag_get()) != NULL);
+			diag_clear(diag_get());
+		} else {
+			++*upserts_applied;
+			if (curr_stmt != NULL)
+				tuple_unref(curr_stmt);
+			curr_stmt = stmt;
+		}
 		node = rlist_prev_entry_safe(node, &history->stmts, link);
 	}
 	*ret = curr_stmt;

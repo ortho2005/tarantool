@@ -850,10 +850,22 @@ vy_read_view_merge(struct vy_write_iterator *stream, struct tuple *hint,
 		       vy_stmt_type(hint) != IPROTO_UPSERT);
 		struct tuple *applied = vy_apply_upsert(h->tuple, hint,
 				stream->cmp_def, stream->format, false);
-		if (applied == NULL)
-			return -1;
-		vy_stmt_unref_if_possible(h->tuple);
-		h->tuple = applied;
+		if (applied == NULL) {
+			/*
+			 * Current upsert can't be applied.
+			 * Let's skip it and log error.
+			 */
+			struct error *e = diag_last_error(diag_get());
+			assert(e != NULL);
+			say_info("Upsert %s is not applied due to the error: %s",
+				 vy_stmt_str(h->tuple), e->errmsg);
+			diag_clear(diag_get());
+			vy_stmt_unref_if_possible(h->tuple);
+			h->tuple = hint;
+		} else {
+			vy_stmt_unref_if_possible(h->tuple);
+			h->tuple = applied;
+		}
 	}
 	/* Squash the rest of UPSERTs. */
 	struct vy_write_history *result = h;
@@ -864,10 +876,16 @@ vy_read_view_merge(struct vy_write_iterator *stream, struct tuple *hint,
 		assert(result->tuple != NULL);
 		struct tuple *applied = vy_apply_upsert(h->tuple, result->tuple,
 					stream->cmp_def, stream->format, false);
-		if (applied == NULL)
-			return -1;
-		vy_stmt_unref_if_possible(result->tuple);
-		result->tuple = applied;
+		if (applied == NULL) {
+			struct error *e = diag_last_error(diag_get());
+			assert(e != NULL);
+			say_info("Upsert %s is not applied due to the error: %s",
+				 vy_stmt_str(h->tuple), e->errmsg);
+			diag_clear(diag_get());
+		} else {
+			vy_stmt_unref_if_possible(result->tuple);
+			result->tuple = applied;
+		}
 		vy_stmt_unref_if_possible(h->tuple);
 		/*
 		 * Don't bother freeing 'h' since it's
