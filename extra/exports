@@ -9,9 +9,6 @@ ibuf_reserve_slow
 console_get_output_format
 console_set_output_format
 
-space_by_id
-box_schema_version
-
 crypto_EVP_MD_CTX_new
 crypto_EVP_MD_CTX_free
 crypto_HMAC_CTX_new
