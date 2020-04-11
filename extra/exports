@@ -9,8 +9,6 @@ ibuf_reserve_slow
 console_get_output_format
 console_set_output_format
 
-tarantool_uptime
-tarantool_exit
 space_by_id
 space_run_triggers
 space_bsize
