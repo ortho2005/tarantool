@@ -6,8 +6,6 @@ ibuf_create
 ibuf_reinit
 ibuf_destroy
 ibuf_reserve_slow
-exception_get_string
-exception_get_int
 console_get_output_format
 console_set_output_format
 
