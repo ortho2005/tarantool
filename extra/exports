@@ -9,13 +9,6 @@ ibuf_reserve_slow
 console_get_output_format
 console_set_output_format
 
-uuid_nil
-tt_uuid_create
-tt_uuid_str
-tt_uuid_is_equal
-tt_uuid_is_nil
-tt_uuid_bswap
-tt_uuid_from_string
 log_level
 log_format
 uri_parse
