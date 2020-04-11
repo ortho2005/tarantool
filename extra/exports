@@ -7,10 +7,6 @@ console_set_output_format
 
 # Module API
 
-coio_wait
-coio_close
-coio_call
-coio_getaddrinfo
 luaL_pushcdata
 luaL_checkcdata
 luaL_setcdatagc
