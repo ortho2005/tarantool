@@ -9,8 +9,6 @@ ibuf_reserve_slow
 console_get_output_format
 console_set_output_format
 
-uri_parse
-uri_format
 PMurHash32
 PMurHash32_Process
 PMurHash32_Result
