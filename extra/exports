@@ -10,8 +10,6 @@ console_get_output_format
 console_set_output_format
 
 space_by_id
-space_run_triggers
-space_bsize
 box_schema_version
 
 crypto_EVP_MD_CTX_new
