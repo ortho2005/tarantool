@@ -5,10 +5,6 @@
 console_get_output_format
 console_set_output_format
 
-# Module API
-
-string_strip_helper
-
 # Lua / LuaJIT
 
 lua_newstate
