@@ -2,14 +2,8 @@
 
 # FFI
 
-ibuf_create
-ibuf_reinit
-ibuf_destroy
-ibuf_reserve_slow
 console_get_output_format
 console_set_output_format
-
-lua_static_aligned_alloc
 
 swim_is_configured
 swim_cfg
