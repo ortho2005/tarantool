@@ -7,7 +7,6 @@ console_set_output_format
 
 # Module API
 
-luaT_error
 box_txn
 box_txn_begin
 box_txn_commit
