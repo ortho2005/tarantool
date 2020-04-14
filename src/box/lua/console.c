@@ -803,3 +803,13 @@ error:
 	lua_settop(L, savetop);
 	return ml.list;
 }
+
+void **
+box_lua_console_export_syms(void)
+{
+	static void *syms[] = {
+		console_get_output_format,
+		console_set_output_format,
+	};
+	return syms;
+}

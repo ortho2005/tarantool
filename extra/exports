@@ -1,6 +1,0 @@
-# Symbols exported by the main Tarantool executable
-
-# FFI
-
-console_get_output_format
-console_set_output_format

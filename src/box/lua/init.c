@@ -443,12 +443,16 @@ box_lua_init(struct lua_State *L)
 }
 
 void **
+box_lua_console_export_syms(void);
+
+void **
 box_lua_tuple_export_syms(void);
 
 void **
 box_lua_export_syms(void)
 {
 	static void *syms[] = {
+		(void *)box_lua_console_export_syms,
 		(void *)box_lua_tuple_export_syms,
 	};
 	return syms;
