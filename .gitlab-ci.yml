@@ -92,7 +92,7 @@ variables:
   image: ${IMAGE_PERF_BUILT}
   stage: perf
   tags:
-    - docker_perf
+    - docker_dev4_perf
   script:
     - ${GITLAB_MAKE} perf_run
 
@@ -190,7 +190,7 @@ perf_bootstrap:
   <<: *perf_only_definition
   stage: test
   tags:
-    - perf
+    - deploy_test
   script:
     - ${GITLAB_MAKE} perf_prepare
 
@@ -206,6 +206,31 @@ perf_sysbench:
     paths:
       - Sysbench_result.txt
       - sysbench_t_version.txt
+
+perf_tpcc:
+  <<: *perf_docker_test_definition
+  variables:
+    <<: *perf_vars_definition
+    BENCH: 'tpcc'
+  artifacts:
+    when: always
+    paths:
+      - tpc_c_result.txt
+      - tpc_c_t_version.txt
+
+perf_cbench:
+  <<: *perf_docker_test_definition
+  variables:
+    <<: *perf_vars_definition
+    BENCH: 'cbench'
+  artifacts:
+    when: always
+    paths:
+      - cbench_memtx_tree_result.txt
+      - cbench_memtx_hash_result.txt
+      - cbench_vinyl_fsync_result.txt
+      - cbench_memtx_write_result.txt
+      - cbench_t_version.txt
 
 # Post-testing part
 
