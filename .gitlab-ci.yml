@@ -205,7 +205,7 @@ perf_sysbench:
     when: always
     paths:
       - Sysbench_result.txt
-      - sysbench_t_version.txt
+      - Sysbench_t_version.txt
 
 perf_tpcc:
   <<: *perf_docker_test_definition
@@ -232,6 +232,50 @@ perf_cbench:
       - cbench_memtx_write_result.txt
       - cbench_t_version.txt
 
+perf_nosqlbench_hash:
+  <<: *perf_docker_test_definition
+  variables:
+    <<: *perf_vars_definition
+    BENCH: 'nosqlbench'
+    ARG: 'hash'
+  artifacts:
+    when: always
+    paths:
+      - nosqlbench_hash_result.txt
+
+perf_nosqlbench_tree:
+  <<: *perf_docker_test_definition
+  variables:
+    <<: *perf_vars_definition
+    BENCH: 'nosqlbench'
+    ARG: 'tree'
+  artifacts:
+    when: always
+    paths:
+      - nosqlbench_tree_result.txt
+
+perf_ycsb_hash:
+  <<: *perf_docker_test_definition
+  variables:
+    <<: *perf_vars_definition
+    BENCH: 'ycsb'
+    ARG: 'hash'
+  artifacts:
+    when: always
+    paths:
+      - ycsb_hash_result.txt
+
+perf_ycsb_tree:
+  <<: *perf_docker_test_definition
+  variables:
+    <<: *perf_vars_definition
+    BENCH: 'ycsb'
+    ARG: 'tree'
+  artifacts:
+    when: always
+    paths:
+      - ycsb_tree_result.txt
+ 
 # Post-testing part
 
 #remove_images:
