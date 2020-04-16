@@ -2209,22 +2209,17 @@ case OP_Ge: {             /* same as TK_GE, jump, in1, in3 */
 	} else {
 		enum field_type type = pOp->p5 & FIELD_TYPE_MASK;
 		if (sql_type_is_numeric(type)) {
-			if ((flags1 | flags3)&MEM_Str) {
-				if ((flags1 & MEM_Str) == MEM_Str) {
-					mem_apply_numeric_type(pIn1);
-					testcase( flags3!=pIn3->flags); /* Possible if pIn1==pIn3 */
-					flags3 = pIn3->flags;
-				}
-				if ((flags3 & MEM_Str) == MEM_Str) {
-					if (mem_apply_numeric_type(pIn3) != 0) {
-						diag_set(ClientError,
-							 ER_SQL_TYPE_MISMATCH,
-							 sql_value_to_diag_str(pIn3),
-							 "numeric");
-						goto abort_due_to_error;
-					}
-
-				}
+			if ((flags1 & MEM_Str) == MEM_Str) {
+				diag_set(ClientError, ER_SQL_TYPE_MISMATCH,
+					 sql_value_to_diag_str(pIn1),
+					 "numeric");
+				goto abort_due_to_error;
+			}
+			if ((flags3 & MEM_Str) == MEM_Str) {
+				diag_set(ClientError, ER_SQL_TYPE_MISMATCH,
+					 sql_value_to_diag_str(pIn3),
+					 "numeric");
+				goto abort_due_to_error;
 			}
 			/* Handle the common case of integer comparison here, as an
 			 * optimization, to avoid a call to sqlMemCompare()
@@ -2257,22 +2252,17 @@ case OP_Ge: {             /* same as TK_GE, jump, in1, in3 */
 				goto compare_op;
 			}
 		} else if (type == FIELD_TYPE_STRING) {
-			if ((flags1 & MEM_Str) == 0 &&
-			    (flags1 & (MEM_Int | MEM_UInt | MEM_Real)) != 0) {
-				testcase( pIn1->flags & MEM_Int);
-				testcase( pIn1->flags & MEM_Real);
-				sqlVdbeMemStringify(pIn1);
-				testcase( (flags1&MEM_Dyn) != (pIn1->flags&MEM_Dyn));
-				flags1 = (pIn1->flags & ~MEM_TypeMask) | (flags1 & MEM_TypeMask);
-				assert(pIn1!=pIn3);
+			if ((flags1 & (MEM_Int | MEM_UInt | MEM_Real)) != 0) {
+				diag_set(ClientError, ER_SQL_TYPE_MISMATCH,
+					 mem_type_to_str(pIn3),
+					 mem_type_to_str(pIn1));
+				goto abort_due_to_error;
 			}
-			if ((flags3 & MEM_Str) == 0 &&
-			    (flags3 & (MEM_Int | MEM_UInt | MEM_Real)) != 0) {
-				testcase( pIn3->flags & MEM_Int);
-				testcase( pIn3->flags & MEM_Real);
-				sqlVdbeMemStringify(pIn3);
-				testcase( (flags3&MEM_Dyn) != (pIn3->flags&MEM_Dyn));
-				flags3 = (pIn3->flags & ~MEM_TypeMask) | (flags3 & MEM_TypeMask);
+			if ((flags3 & (MEM_Int | MEM_UInt | MEM_Real)) != 0) {
+				diag_set(ClientError, ER_SQL_TYPE_MISMATCH,
+					 mem_type_to_str(pIn1),
+					 mem_type_to_str(pIn3));
+				goto abort_due_to_error;
 			}
 		}
 		assert(pOp->p4type==P4_COLLSEQ || pOp->p4.pColl==0);
@@ -3377,8 +3367,6 @@ case OP_SeekGT: {       /* jump, in3 */
 		pIn3 = &aMem[int_field];
 		if ((pIn3->flags & MEM_Null) != 0)
 			goto skip_truncate;
-		if ((pIn3->flags & MEM_Str) != 0)
-			mem_apply_numeric_type(pIn3);
 		int64_t i;
 		if ((pIn3->flags & MEM_Int) == MEM_Int) {
 			i = pIn3->u.i;
@@ -3471,6 +3459,26 @@ skip_truncate:
 	assert(oc!=OP_SeekLT || r.default_rc==+1);
 
 	r.aMem = &aMem[pOp->p3];
+	for (int i = 0; i < r.nField; ++i) {
+		enum field_type type = r.key_def->parts[i].type;
+		struct Mem *mem = &r.aMem[i];
+		if ((mem->flags & MEM_Str) != 0 && sql_type_is_numeric(type)) {
+			diag_set(ClientError, ER_SQL_TYPE_MISMATCH,
+				field_type_strs[type], mem_type_to_str(mem));
+			goto abort_due_to_error;
+		}
+		if (mem_apply_type(mem, type) != 0) {
+			diag_set(ClientError, ER_SQL_TYPE_MISMATCH,
+				field_type_strs[type], mem_type_to_str(mem));
+			goto abort_due_to_error;
+		}
+		if ((mem->flags & MEM_Real) != 0 &&
+		    (type == FIELD_TYPE_INTEGER ||
+		     type == FIELD_TYPE_UNSIGNED)) {
+			res = 1;
+			goto seek_not_found;
+		}
+	}
 #ifdef SQL_DEBUG
 	{ int i; for(i=0; i<r.nField; i++) assert(memIsValid(&r.aMem[i])); }
 #endif
@@ -4598,6 +4606,27 @@ case OP_IdxGE:  {       /* jump */
 		r.default_rc = 0;
 	}
 	r.aMem = &aMem[pOp->p3];
+	for (int i = 0; i < r.nField; ++i) {
+		struct Mem *mem = &r.aMem[i];
+		enum mp_type mp_type = sql_value_type(mem);
+		enum field_type field_type = r.key_def->parts[i].type;
+		if (field_type == FIELD_TYPE_SCALAR ||
+		    mem->field_type == FIELD_TYPE_SCALAR)
+			continue;
+		bool is_nullable = r.key_def->parts[i].nullable_action ==
+				   ON_CONFLICT_ACTION_NONE;
+		if (field_mp_plain_type_is_compatible(field_type, mp_type,
+						      is_nullable))
+			continue;
+		if (!sql_type_is_numeric(field_type) ||
+		    !(mp_type == MP_INT || mp_type == MP_UINT ||
+		      mp_type == MP_DOUBLE || mp_type == MP_FLOAT)) {
+			diag_set(ClientError, ER_SQL_TYPE_MISMATCH,
+				 mem_type_to_str(mem),
+				 field_type_strs[field_type]);
+			goto abort_due_to_error;
+		}
+	}
 #ifdef SQL_DEBUG
 	{ int i; for(i=0; i<r.nField; i++) assert(memIsValid(&r.aMem[i])); }
 #endif

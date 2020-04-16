@@ -1,6 +1,6 @@
 #!/usr/bin/env tarantool
 test = require("sqltester")
-test:plan(40)
+test:plan(39)
 
 --!./tcltestrunner.lua
 -- 2001 September 15
@@ -859,43 +859,33 @@ test:do_execsql_test(
         -- </intpkey-14.2>
     })
 
-test:do_execsql_test(
-    "intpkey-14.3",
-    [[
-        SELECT * FROM t3 WHERE a>'2';
-    ]], {
-        -- <intpkey-14.3>
-        3, 3, "3"
-        -- </intpkey-14.3>
-    })
-
-test:do_execsql_test(
+test:do_catchsql_test(
     "intpkey-14.4",
     [[
         SELECT * FROM t3 WHERE a<'2';
     ]], {
         -- <intpkey-14.4>
-        1, 1, "one"
+        1, "Type mismatch: can not convert text to integer"
         -- </intpkey-14.4>
     })
 
-test:do_execsql_test(
+test:do_catchsql_test(
     "intpkey-14.5",
     [[
         SELECT * FROM t3 WHERE a<c;
     ]], {
         -- <intpkey-14.5>
-        1, 1, "one"
+        1, "Type mismatch: can not convert one to numeric"
         -- </intpkey-14.5>
     })
 
-test:do_execsql_test(
+test:do_catchsql_test(
     "intpkey-14.6",
     [[
         SELECT * FROM t3 WHERE a=c;
     ]], {
         -- <intpkey-14.6>
-        2, 2, "2", 3, 3, "3"
+        1, "Type mismatch: can not convert one to numeric"
         -- </intpkey-14.6>
     })
 

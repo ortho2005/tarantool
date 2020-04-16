@@ -83,23 +83,23 @@ test:do_execsql_test(
         -- </1.5>
     })
 
-test:do_execsql_test(
+test:do_catchsql_test(
     2.1,
     [[
         SELECT x FROM t1 WHERE x IN (1);
     ]], {
         -- <2.1>
-        "1"
+        1,"Type mismatch: can not convert 1 to numeric"
         -- </2.1>
     })
 
-test:do_execsql_test(
+test:do_catchsql_test(
     2.2,
     [[
         SELECT x FROM t1 WHERE x IN (1.0);
     ]], {
         -- <2.2>
-        "1"
+        1,"Type mismatch: can not convert 1 to numeric"
         -- </2.2>
     })
 
@@ -123,23 +123,23 @@ test:do_execsql_test(
         -- </2.4>
     })
 
-test:do_execsql_test(
+test:do_catchsql_test(
     2.5,
     [[
         SELECT x FROM t1 WHERE 1 IN (x);
     ]], {
         -- <2.5>
-        "1"
+        1,"Type mismatch: can not convert 1 to numeric"
         -- </2.5>
     })
 
-test:do_execsql_test(
+test:do_catchsql_test(
     2.6,
     [[
         SELECT x FROM t1 WHERE 1.0 IN (x);
     ]], {
         -- <2.6>
-        "1"
+        1,"Type mismatch: can not convert 1 to numeric"
         -- </2.6>
     })
 
@@ -183,23 +183,23 @@ test:do_execsql_test(
         -- </3.2>
     })
 
-test:do_execsql_test(
+test:do_catchsql_test(
     3.3,
     [[
         SELECT x FROM t2 WHERE x IN ('1');
     ]], {
         -- <3.3>
-        1
+        1, "Type mismatch: can not convert integer to text"
         -- </3.3>
     })
 
-test:do_execsql_test(
+test:do_catchsql_test(
     3.4,
     [[
         SELECT x FROM t2 WHERE x IN ('1');
     ]], {
         -- <3.4>
-        1
+        1, "Type mismatch: can not convert integer to text"
         -- </3.4>
     })
 
@@ -223,23 +223,23 @@ test:do_execsql_test(
         -- </3.6>
     })
 
-test:do_execsql_test(
+test:do_catchsql_test(
     3.7,
     [[
         SELECT x FROM t2 WHERE '1' IN (x);
     ]], {
         -- <3.7>
-        1
+        1, "Type mismatch: can not convert integer to text"
         -- </3.7>
     })
 
-test:do_execsql_test(
+test:do_catchsql_test(
     3.8,
     [[
         SELECT x FROM t2 WHERE '1' IN (x);
     ]], {
         -- <3.8>
-        1
+        1, "Type mismatch: can not convert integer to text"
         -- </3.8>
     })
 
@@ -263,23 +263,23 @@ test:do_execsql_test(
         -- </4.2>
     })
 
-test:do_execsql_test(
+test:do_catchsql_test(
     4.3,
     [[
         SELECT x FROM t3 WHERE x IN ('1');
     ]], {
         -- <4.3>
-        1.0
+        1, "Type mismatch: can not convert number to text"
         -- </4.3>
     })
 
-test:do_execsql_test(
+test:do_catchsql_test(
     4.4,
     [[
         SELECT x FROM t3 WHERE x IN ('1.0');
     ]], {
         -- <4.4>
-        1.0
+        1, "Type mismatch: can not convert number to text"
         -- </4.4>
     })
 
@@ -303,23 +303,23 @@ test:do_execsql_test(
         -- </4.6>
     })
 
-test:do_execsql_test(
+test:do_catchsql_test(
     4.7,
     [[
         SELECT x FROM t3 WHERE '1' IN (x);
     ]], {
         -- <4.7>
-        1
+        1, "Type mismatch: can not convert number to text"
         -- </4.7>
     })
 
-test:do_execsql_test(
+test:do_catchsql_test(
     4.8,
     [[
         SELECT x FROM t3 WHERE '1.0' IN (x);
     ]], {
         -- <4.8>
-        1
+        1, "Type mismatch: can not convert number to text"
         -- </4.8>
     })
 
@@ -343,23 +343,23 @@ test:do_execsql_test(
         -- </5.2>
     })
 
-test:do_execsql_test(
+test:do_catchsql_test(
     5.3,
     [[
         SELECT x FROM t4 WHERE x IN ('1');
     ]], {
         -- <5.3>
-        
+        1, "Type mismatch: can not convert number to text"
         -- </5.3>
     })
 
-test:do_execsql_test(
+test:do_catchsql_test(
     5.4,
     [[
         SELECT x FROM t4 WHERE x IN ('1.0');
     ]], {
         -- <5.4>
-        
+        1, "Type mismatch: can not convert number to text"
         -- </5.4>
     })
 
@@ -373,13 +373,13 @@ test:do_execsql_test(
         -- </5.5>
     })
 
-test:do_execsql_test(
+test:do_catchsql_test(
     5.6,
     [[
         SELECT x FROM t4 WHERE x IN ('1.11');
     ]], {
         -- <5.6>
-        1.11
+        1, "Type mismatch: can not convert number to text"
         -- </5.6>
     })
 
@@ -403,23 +403,23 @@ test:do_execsql_test(
         -- </5.8>
     })
 
-test:do_execsql_test(
+test:do_catchsql_test(
     5.9,
     [[
         SELECT x FROM t4 WHERE '1' IN (x);
     ]], {
         -- <5.9>
-        
+        1, "Type mismatch: can not convert number to text"
         -- </5.9>
     })
 
-test:do_execsql_test(
+test:do_catchsql_test(
     5.10,
     [[
         SELECT x FROM t4 WHERE '1.0' IN (x);
     ]], {
         -- <5.10>
-        
+        1, "Type mismatch: can not convert number to text"
         -- </5.10>
     })
 
@@ -433,13 +433,13 @@ test:do_execsql_test(
         -- </5.11>
     })
 
-test:do_execsql_test(
+test:do_catchsql_test(
     5.12,
     [[
         SELECT x FROM t4 WHERE '1.11' IN (x);
     ]], {
         -- <5.12>
-        1.11
+        1, "Type mismatch: can not convert number to text"
         -- </5.12>
     })
 
@@ -463,23 +463,23 @@ test:do_execsql_test(
         -- </6.2>
     })
 
-test:do_execsql_test(
+test:do_catchsql_test(
     6.3,
     [[
         SELECT x, y FROM t5 WHERE x IN ('1');
     ]], {
         -- <6.3>
-        1, "one", 1, "two", 1, "three", 1.0, "four"
+        1, "Type mismatch: can not convert 1 to numeric"
         -- </6.3>
     })
 
-test:do_execsql_test(
+test:do_catchsql_test(
     6.4,
     [[
         SELECT x, y FROM t5 WHERE x IN ('1.0');
     ]], {
         -- <6.4>
-        1, "one", 1, "two", 1, "three", 1.0, "four"
+        1, "Type mismatch: can not convert 1.0 to numeric"
         -- </6.4>
     })
 
@@ -503,23 +503,23 @@ test:do_execsql_test(
         -- </6.6>
     })
 
-test:do_execsql_test(
+test:do_catchsql_test(
     6.7,
     [[
         SELECT x, y FROM t5 WHERE '1' IN (x);
     ]], {
         -- <6.7>
-        1, "one", 1, "two", 1, "three", 1.0, "four"
+        1, "Type mismatch: can not convert 1 to numeric"
         -- </6.7>
     })
 
-test:do_execsql_test(
+test:do_catchsql_test(
     6.8,
     [[
         SELECT x, y FROM t5 WHERE '1.0' IN (x);
     ]], {
         -- <6.8>
-        1, "one", 1, "two", 1, "three", 1, "four"
+        1, "Type mismatch: can not convert 1.0 to numeric"
         -- </6.8>
     })
 

@@ -36,12 +36,12 @@ local sqls = {
 
 for tn, sql in ipairs(sqls) do
     test:execsql(sql)
-    test:do_execsql_test(
+    test:do_catchsql_test(
         "tkt-f973c7ac3-1."..tn..".1",
         [[
             SELECT c1,c2 FROM t WHERE c1 = 5 AND c2>0 AND c2<='2' ORDER BY c2 DESC 
         ]], {
-            
+            1, "/Type mismatch: can not convert/"
         })
 
     test:do_execsql_test(
@@ -52,36 +52,36 @@ for tn, sql in ipairs(sqls) do
             5, 5, 5, 4
         })
 
-    test:do_execsql_test(
+    test:do_catchsql_test(
         "tkt-f973c7ac3-1."..tn..".3",
         [[
             SELECT c1,c2 FROM t WHERE c1 = 5 AND c2>0 AND c2<='5' ORDER BY c2 DESC 
         ]], {
-            5, 5, 5, 4
+            1, "/Type mismatch: can not convert/"
         })
 
-    test:do_execsql_test(
+    test:do_catchsql_test(
         "tkt-f973c7ac3-1."..tn..".4",
         [[
             SELECT c1,c2 FROM t WHERE c1 = 5 AND c2>'0' AND c2<=5 ORDER BY c2 DESC 
         ]], {
-            5, 5, 5, 4
+            1, "/Type mismatch: can not convert/"
         })
 
-    test:do_execsql_test(
+    test:do_catchsql_test(
         "tkt-f973c7ac3-1."..tn..".5",
         [[
             SELECT c1,c2 FROM t WHERE c1 = 5 AND c2>'0' AND c2<='5' ORDER BY c2 DESC 
         ]], {
-            5, 5, 5, 4
+            1, "/Type mismatch: can not convert/"
         })
 
-    test:do_execsql_test(
+    test:do_catchsql_test(
         "tkt-f973c7ac3-1."..tn..".6",
         [[
             SELECT c1,c2 FROM t WHERE c1 = 5 AND c2>0 AND c2<='2' ORDER BY c2 ASC 
         ]], {
-            
+            1, "/Type mismatch: can not convert/"
         })
 
     test:do_execsql_test(
@@ -92,28 +92,28 @@ for tn, sql in ipairs(sqls) do
             5, 4, 5, 5
         })
 
-    test:do_execsql_test(
+    test:do_catchsql_test(
         "tkt-f973c7ac3-1."..tn..".8",
         [[
             SELECT c1,c2 FROM t WHERE c1 = 5 AND c2>0 AND c2<='5' ORDER BY c2 ASC 
         ]], {
-            5, 4, 5, 5
+            1, "/Type mismatch: can not convert/"
         })
 
-    test:do_execsql_test(
+    test:do_catchsql_test(
         "tkt-f973c7ac3-1."..tn..".9",
         [[
             SELECT c1,c2 FROM t WHERE c1 = 5 AND c2>'0' AND c2<=5 ORDER BY c2 ASC 
         ]], {
-            5, 4, 5, 5
+            1, "/Type mismatch: can not convert/"
         })
 
-    test:do_execsql_test(
+    test:do_catchsql_test(
         "tkt-f973c7ac3-1."..tn..".10",
         [[
             SELECT c1,c2 FROM t WHERE c1 = 5 AND c2>'0' AND c2<='5' ORDER BY c2 ASC 
         ]], {
-            5, 4, 5, 5
+            1, "/Type mismatch: can not convert/"
         })
 
 end
