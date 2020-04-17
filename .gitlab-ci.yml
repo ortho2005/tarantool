@@ -215,8 +215,8 @@ perf_tpcc:
   artifacts:
     when: always
     paths:
-      - tpc_c_result.txt
-      - tpc_c_t_version.txt
+      - tpc.c_result.txt
+      - tpc.c_t_version.txt
 
 perf_cbench:
   <<: *perf_docker_test_definition
@@ -226,10 +226,10 @@ perf_cbench:
   artifacts:
     when: always
     paths:
-      - cbench_memtx_tree_result.txt
-      - cbench_memtx_hash_result.txt
-      - cbench_vinyl_fsync_result.txt
-      - cbench_memtx_write_result.txt
+      - cbench.memtx.tree_result.txt
+      - cbench.memtx.hash_result.txt
+      - cbench.vinyl.fsync_result.txt
+      - cbench.vinyl.write_result.txt
       - cbench_t_version.txt
 
 perf_nosqlbench_hash:
@@ -241,7 +241,8 @@ perf_nosqlbench_hash:
   artifacts:
     when: always
     paths:
-      - nosqlbench_hash_result.txt
+      - nosqlbench.hash_result.txt
+      - nosqlbench.hash_t_version.txt
 
 perf_nosqlbench_tree:
   <<: *perf_docker_test_definition
@@ -252,7 +253,8 @@ perf_nosqlbench_tree:
   artifacts:
     when: always
     paths:
-      - nosqlbench_tree_result.txt
+      - nosqlbench.tree_result.txt
+      - nosqlbench.tree_t_version.txt
 
 perf_ycsb_hash:
   <<: *perf_docker_test_definition
@@ -263,7 +265,8 @@ perf_ycsb_hash:
   artifacts:
     when: always
     paths:
-      - ycsb_hash_result.txt
+      - ycsb.hash_result.txt
+      - ycsb.hash_t_version.txt
 
 perf_ycsb_tree:
   <<: *perf_docker_test_definition
@@ -274,7 +277,21 @@ perf_ycsb_tree:
   artifacts:
     when: always
     paths:
-      - ycsb_tree_result.txt
+      - ycsb.tree_result.txt
+      - ycsb.tree_t_version.txt
+
+perf_linkbench_ssd:
+  <<: *perf_docker_test_definition
+  tags:
+    - docker_perf_ssd
+  variables:
+    <<: *perf_vars_definition
+    BENCH: 'linkbench'
+  artifacts:
+    when: always
+    paths:
+      - linkbench.ssd_result.txt
+      - linkbench.ssd_t_version.txt
  
 # Post-testing part
 
