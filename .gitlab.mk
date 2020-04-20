@@ -81,6 +81,7 @@ docker_bootstrap:
 # Clone the benchmarks repository for performance testing
 perf_clone_benchs_repo:
 	git clone https://github.com/tarantool/bench-run.git
+	cd bench-run && git checkout opiskunov/check-gh4865-perf
 
 # Build images for performance testing
 perf_prepare: perf_clone_benchs_repo
