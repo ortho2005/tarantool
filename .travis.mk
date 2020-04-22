@@ -6,6 +6,7 @@ DOCKER_IMAGE?=packpack/packpack:debian-stretch
 TEST_RUN_EXTRA_PARAMS?=
 MAX_FILES?=65534
 MAX_PROC?=2500
+LANES_ROCKSPEC="https://luarocks.org/manifests/benoitgermain/lanes-3.13.0-0.rockspec"
 
 all: package
 
@@ -65,7 +66,8 @@ deps_debian:
 		libcurl4-openssl-dev libunwind-dev libicu-dev \
 		python python-pip python-setuptools python-dev \
 		python-msgpack python-yaml python-argparse python-six python-gevent \
-		lcov ruby clang llvm llvm-dev zlib1g-dev autoconf automake libtool
+		lcov ruby clang llvm llvm-dev zlib1g-dev autoconf automake libtool \
+		tarantool-devel unzip
 
 deps_buster_clang_8: deps_debian
 	echo "deb http://apt.llvm.org/buster/ llvm-toolchain-buster-8 main" > /etc/apt/sources.list.d/clang_8.list
@@ -80,9 +82,6 @@ build_debian:
 	# ENABLE_DIST required to enable tarantoolctl for test_debian_luacheck
 	cmake . -DENABLE_DIST=ON -DCMAKE_BUILD_TYPE=RelWithDebInfo -DENABLE_WERROR=ON ${CMAKE_EXTRA_PARAMS}
 	make -j
-
-build_debian_install: build_debian
-	sudo make install
 
 test_debian_no_deps: build_debian
 	cd test && /usr/bin/python test-run.py --force $(TEST_RUN_EXTRA_PARAMS)
@@ -154,10 +153,22 @@ test_static_docker_build:
 # Static Analysis
 # ###################
 
-test_debian_luacheck: build_debian_install
-	tarantoolctl rocks install luacheck
-	# TODO: run in parallel with LuaLanes
-	.rocks/bin/luacheck --codes --config .luacheckrc .
+test_debian_luacheck:
+	pip install hererocks setuptools bdist_wheel_name wheel
+	hererocks lua51 -l5.1 -rlatest
+	whereis unzip || true
+	echo $PATH
+	export PATH=$PATH:/usr/bin
+	/usr/bin/unzip
+	source lua51/bin/activate
+	luarocks install luacheck
+	luarocks install ${LANES_ROCKSPEC}
+	luacheck --version
+	luacheck --jobs $(getconf _NPROCESSORS_ONLN) --codes --config .luacheckrc .
+	deactivate-lua
+	#tarantoolctl rocks install luacheck
+	#tarantoolctl rocks install ${LANES_ROCKSPEC}
+	#.rocks/bin/luacheck --jobs $(getconf _NPROCESSORS_ONLN) --codes --config .luacheckrc .
 
 #######
 # OSX #
