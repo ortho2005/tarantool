@@ -1,7 +1,7 @@
 stages:
   - test
   - perf
-#  - cleanup
+#  - cleanup 
 
 variables:
   GITLAB_MAKE: "make -f .gitlab.mk"
