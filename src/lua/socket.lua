@@ -102,6 +102,9 @@ local gc_socket_sentinel = ffi.new(gc_socket_t, { fd = -1 })
 
 local function socket_close(socket)
     local fd = check_socket(socket)
+    if socket._server_socket_closed ~= nil then
+        socket._server_socket_closed = true
+    end
     socket._errno = nil
     local r = ffi.C.coio_close(fd)
     -- .fd is const to prevent tampering
@@ -1082,6 +1085,9 @@ local function tcp_server_loop(server, s, addr)
     fiber.name(format("%s/%s:%s", server.name, addr.host, addr.port), {truncate = true})
     log.info("started")
     while socket_readable(s) do
+        if s._server_socket_closed then
+            break
+        end
         local sc, from = socket_accept(s)
         if sc == nil then
             local errno = s._errno
@@ -1216,6 +1222,9 @@ local function tcp_server(host, port, opts, timeout)
         return nil
     end
     fiber.create(tcp_server_loop, server, s, addr)
+    -- The _server_socket_closed flag is necessary for the server
+    -- to stop correctly when closing the socket.
+    s._server_socket_closed = false
     return s, addr
 end
 
