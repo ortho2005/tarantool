@@ -1,0 +1,39 @@
+-- test-run result file version 2
+--
+-- gh-4282: synchronous replication. It allows to make certain
+-- spaces commit only when their changes are replicated to a
+-- quorum of replicas.
+--
+s = box.schema.create_space('test', {is_sync = true})
+ | ---
+ | ...
+s.is_sync
+ | ---
+ | - true
+ | ...
+pk = s:create_index('pk')
+ | ---
+ | ...
+box.begin() s:insert({1}) s:insert({2}) box.commit()
+ | ---
+ | ...
+s:select{}
+ | ---
+ | - - [1]
+ |   - [2]
+ | ...
+s:drop()
+ | ---
+ | ...
+
+-- Default is async.
+s = box.schema.create_space('test')
+ | ---
+ | ...
+s.is_sync
+ | ---
+ | - false
+ | ...
+s:drop()
+ | ---
+ | ...
