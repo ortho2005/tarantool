@@ -1,0 +1,33 @@
+-- test-run result file version 2
+CREATE TABLE t1 (a INT PRIMARY KEY)
+ | ---
+ | - row_count: 1
+ | ...
+CREATE TABLE t2 (a INT PRIMARY KEY)
+ | ---
+ | - row_count: 1
+ | ...
+
+-- Names of columns can be duplicated.
+SELECT * FROM (SELECT * FROM t1, t2)
+ | ---
+ | - metadata:
+ |   - name: A
+ |     type: integer
+ |   - name: A
+ |     type: integer
+ |   rows: []
+ | ...
+
+-- Make sure that a view with duplicated column names
+-- can't be created.
+CREATE VIEW v AS SELECT * FROM t1, t2
+ | ---
+ | - null
+ | - Space field 'A' is duplicate
+ | ...
+CREATE VIEW v AS SELECT * FROM t1, (SELECT * FROM t2)
+ | ---
+ | - null
+ | - Space field 'A' is duplicate
+ | ...

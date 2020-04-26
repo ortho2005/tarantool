@@ -1,6 +1,6 @@
 #!/usr/bin/env tarantool
 test = require("sqltester")
-test:plan(69)
+test:plan(57)
 
 --!./tcltestrunner.lua
 -- 2008 July 15
@@ -64,10 +64,6 @@ test:do_test(
             INSERT INTO txyz VALUES(4,5,6);
             CREATE TABLE tboth(a INT PRIMARY KEY,b INT,c INT,x INT,y INT,z INT);
             INSERT INTO tboth VALUES(11,12,13,14,15,16);
-            CREATE VIEW v1 AS SELECT tabC.a, txyZ.x, * 
-              FROM tabc, txyz ORDER BY 1 LIMIT 1;
-            CREATE VIEW v2 AS SELECT tabC.a, txyZ.x, tboTh.a, tbotH.x, *
-              FROM tabc, txyz, tboth ORDER BY 1 LIMIT 1;
         ]]
         return test:execsql2 [[
             SELECT * FROM tabc;
@@ -138,37 +134,10 @@ test:do_execsql2_test(
         -- </colname-2.7>
     })
 
-test:do_execsql2_test(
-    "colname-2.8",
-    [[
-        SELECT * FROM v1 ORDER BY 2;
-    ]], {
-        -- <colname-2.8>
-        "A",1,"X",4,"A_1",1,"B",2,"C",3,"X_1",4,"Y",5,"Z",6
-        -- </colname-2.8>
-    })
-
-test:do_execsql2_test(
-    "colname-2.9",
-    [[
-        SELECT * FROM v2 ORDER BY 2;
-    ]], {
-        -- <colname-2.9>
-        "A",1,"X",4,"A_1",11,"X_1",14,"A_2",1,"B",2,"C",3,"X_2",4,"Y",5,"Z",6,"A_3",11,"B_1",12,"C_1",13,"X_3",14,"Y_1",15,"Z_1",16
-        -- </colname-2.9>
-    })
-
 -- Tests for full=OFF
 test:do_test(
     "colname-3.1",
     function()
-        test:execsql [[
-            UPDATE "_session_settings" SET "value" = false WHERE "name" = 'sql_full_column_names';
-            CREATE VIEW v3 AS SELECT tabC.a, txyZ.x, *
-              FROM tabc, txyz ORDER BY 1 LIMIT 1;
-            CREATE VIEW v4 AS SELECT tabC.a, txyZ.x, tboTh.a, tbotH.x, * 
-              FROM tabc, txyz, tboth ORDER BY 1 LIMIT 1;
-        ]]
         return test:execsql2 [[
             SELECT * FROM tabc;
         ]]
@@ -238,56 +207,12 @@ test:do_execsql2_test(
         -- </colname-3.7>
     })
 
-test:do_execsql2_test(
-    "colname-3.8",
-    [[
-        SELECT v1.a, * FROM v1 ORDER BY 2;
-    ]], {
-        -- <colname-3.8>
-        "A",1,"A",1,"X",4,"A_1",1,"B",2,"C",3,"X_1",4,"Y",5,"Z",6
-        -- </colname-3.8>
-    })
-
-test:do_execsql2_test(
-    "colname-3.9",
-    [[
-        SELECT * FROM v2 ORDER BY 2;
-    ]], {
-        -- <colname-3.9>
-        "A",1,"X",4,"A_1",11,"X_1",14,"A_2",1,"B",2,"C",3,"X_2",4,"Y",5,"Z",6,"A_3",11,"B_1",12,"C_1",13,"X_3",14,"Y_1",15,"Z_1",16
-        -- </colname-3.9>
-    })
-
-test:do_execsql2_test(
-    "colname-3.10",
-    [[
-        SELECT * FROM v3 ORDER BY 2;
-    ]], {
-        -- <colname-3.10>
-        "A",1,"X",4,"A_1",1,"B",2,"C",3,"X_1",4,"Y",5,"Z",6
-        -- </colname-3.10>
-    })
-
-test:do_execsql2_test(
-    "colname-3.11",
-    [[
-        SELECT * FROM v4 ORDER BY 2;
-    ]], {
-        -- <colname-3.11>
-        "A",1,"X",4,"A_1",11,"X_1",14,"A_2",1,"B",2,"C",3,"X_2",4,"Y",5,"Z",6,"A_3",11,"B_1",12,"C_1",13,"X_3",14,"Y_1",15,"Z_1",16
-        -- </colname-3.11>
-    })
-
 -- Test for full=ON
 test:do_test(
     "colname-4.1",
     function()
         test:execsql [[
             UPDATE "_session_settings" SET "value" = true WHERE "name" = 'sql_full_column_names';
-            CREATE VIEW v5 AS SELECT tabC.a, txyZ.x, *
-              FROM tabc, txyz ORDER BY 1 LIMIT 1;
-            CREATE VIEW v6 AS SELECT tabC.a, txyZ.x, tboTh.a, tbotH.x, * 
-              FROM tabc, txyz, tboth ORDER BY 1 LIMIT 1;
         ]]
         return test:execsql2 [[
             SELECT * FROM tabc;
@@ -356,66 +281,6 @@ test:do_execsql2_test(
         -- <colname-4.7>
         "TABC.A", 1, "TABC.B", 2, "TABC.C", 3, "TXYZ.X", 4, "TXYZ.Y", 5, "TXYZ.Z", 6, "TBOTH.A", 11, "TBOTH.B", 12, "TBOTH.C", 13, "TBOTH.X", 14, "TBOTH.Y", 15, "TBOTH.Z", 16
         -- </colname-4.7>
-    })
-
-test:do_execsql2_test(
-    "colname-4.8",
-    [[
-        SELECT * FROM v1 ORDER BY 2;
-    ]], {
-        -- <colname-4.8>
-        "V1.A",1,"V1.X",4,"V1.A_1",1,"V1.B",2,"V1.C",3,"V1.X_1",4,"V1.Y",5,"V1.Z",6
-        -- </colname-4.8>
-    })
-
-test:do_execsql2_test(
-    "colname-4.9",
-    [[
-        SELECT * FROM v2 ORDER BY 2;
-    ]], {
-        -- <colname-4.9>
-        "V2.A",1,"V2.X",4,"V2.A_1",11,"V2.X_1",14,"V2.A_2",1,"V2.B",2,"V2.C",3,"V2.X_2",4,"V2.Y",5,"V2.Z",6,"V2.A_3",11,"V2.B_1",12,"V2.C_1",13,"V2.X_3",14,"V2.Y_1",15,"V2.Z_1",16
-        -- </colname-4.9>
-    })
-
-test:do_execsql2_test(
-    "colname-4.10",
-    [[
-        SELECT * FROM v3 ORDER BY 2;
-    ]], {
-        -- <colname-4.10>
-        "V3.A",1,"V3.X",4,"V3.A_1",1,"V3.B",2,"V3.C",3,"V3.X_1",4,"V3.Y",5,"V3.Z",6
-        -- </colname-4.10>
-    })
-
-test:do_execsql2_test(
-    "colname-4.11",
-    [[
-        SELECT * FROM v4 ORDER BY 2;
-    ]], {
-        -- <colname-4.11>
-        "V4.A",1,"V4.X",4,"V4.A_1",11,"V4.X_1",14,"V4.A_2",1,"V4.B",2,"V4.C",3,"V4.X_2",4,"V4.Y",5,"V4.Z",6,"V4.A_3",11,"V4.B_1",12,"V4.C_1",13,"V4.X_3",14,"V4.Y_1",15,"V4.Z_1",16
-        -- </colname-4.11>
-    })
-
-test:do_execsql2_test(
-    "colname-4.12",
-    [[
-        SELECT * FROM v5 ORDER BY 2;
-    ]], {
-        -- <colname-4.12>
-        "V5.A",1,"V5.X",4,"V5.A_1",1,"V5.B",2,"V5.C",3,"V5.X_1",4,"V5.Y",5,"V5.Z",6
-        -- </colname-4.12>
-    })
-
-test:do_execsql2_test(
-    "colname-4.13",
-    [[
-        SELECT * FROM v6 ORDER BY 2;
-    ]], {
-        -- <colname-4.13>
-        "V6.A",1,"V6.X",4,"V6.A_1",11,"V6.X_1",14,"V6.A_2",1,"V6.B",2,"V6.C",3,"V6.X_2",4,"V6.Y",5,"V6.Z",6,"V6.A_3",11,"V6.B_1",12,"V6.C_1",13,"V6.X_3",14,"V6.Y_1",15,"V6.Z_1",16
-        -- </colname-4.13>
     })
 
 -- MUST_WORK_TEST avoid using sql_master

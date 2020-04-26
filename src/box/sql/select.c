@@ -1895,13 +1895,9 @@ sqlColumnsFromExprList(Parse * parse, ExprList * expr_list,
 {
 	/* Database connection */
 	sql *db = parse->db;
-	u32 cnt;		/* Index added to make the name unique */
 	Expr *p;		/* Expression for a single result column */
 	char *zName;		/* Column name */
-	int nName;		/* Size of name in zName[] */
-	Hash ht;		/* Hash table of column names */
 
-	sqlHashInit(&ht);
 	uint32_t column_count =
 		expr_list != NULL ? (uint32_t)expr_list->nExpr : 0;
 	/*
@@ -1953,32 +1949,9 @@ sqlColumnsFromExprList(Parse * parse, ExprList * expr_list,
 		}
 		if (zName == NULL) {
 			uint32_t idx = ++parse->autoname_i;
-			zName = sqlDbStrDup(db, sql_generate_column_name(idx));
-		} else {
-			zName = sqlDbStrDup(db, zName);
-		}
-
-		/* Make sure the column name is unique.  If the name is not unique,
-		 * append an integer to the name so that it becomes unique.
-		 */
-		cnt = 0;
-		while (zName && sqlHashFind(&ht, zName) != 0) {
-			nName = sqlStrlen30(zName);
-			if (nName > 0) {
-				int j;
-				for (j = nName - 1;
-				     j > 0 && sqlIsdigit(zName[j]); j--);
-				if (zName[j] == '_')
-					nName = j;
-			}
-			zName =
-			    sqlMPrintf(db, "%.*z_%u", nName, zName, ++cnt);
+			zName = (char *) sql_generate_column_name(idx);
 		}
 		size_t name_len = strlen(zName);
-		void *field = &space_def->fields[i];
-		if (zName != NULL &&
-		    sqlHashInsert(&ht, zName, field) == field)
-			sqlOomFault(db);
 		space_def->fields[i].name = region_alloc(region, name_len + 1);
 		if (space_def->fields[i].name == NULL) {
 			sqlOomFault(db);
@@ -1989,7 +1962,6 @@ sqlColumnsFromExprList(Parse * parse, ExprList * expr_list,
 		}
 	}
 cleanup:
-	sqlHashClear(&ht);
 	if (db->mallocFailed) {
 		/*
 		 * pTable->def could be not temporal in

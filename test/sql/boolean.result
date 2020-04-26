@@ -690,16 +690,16 @@ SELECT * FROM (SELECT t4.i, t5.i, a, b FROM t4, t5 WHERE a = false OR b = true);
  | - metadata:
  |   - name: I
  |     type: integer
- |   - name: I_1
+ |   - name: I
  |     type: integer
  |   - name: A
  |     type: boolean
  |   - name: B
  |     type: boolean
  |   rows:
- |   - [100, 1, false, true]
+ |   - [100, 100, false, true]
  |   - [100, 100, false, false]
- |   - [100, 101, false, false]
+ |   - [100, 100, false, false]
  | ...
 
 -- Check VIEW.
