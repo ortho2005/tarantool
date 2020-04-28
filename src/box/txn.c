@@ -494,24 +494,37 @@ txn_journal_entry_new(struct txn *txn)
 
 	struct xrow_header **remote_row = req->rows;
 	struct xrow_header **local_row = req->rows + txn->n_applier_rows;
+	bool is_sync = false;
+	/*
+	 * Only local transactions, originated from the master,
+	 * can enter 'waiting for acks' state. It means, only
+	 * author of the transaction can collect acks. Replicas
+	 * consider it a normal async transaction so far.
+	 */
+	bool is_local = true;
 
 	stailq_foreach_entry(stmt, &txn->stmts, next) {
 		if (stmt->has_triggers) {
 			txn_init_triggers(txn);
 			rlist_splice(&txn->on_commit, &stmt->on_commit);
 		}
+		is_sync = is_sync || stmt->space->def->opts.is_sync;
 
 		/* A read (e.g. select) request */
 		if (stmt->row == NULL)
 			continue;
 
-		if (stmt->row->replica_id == 0)
+		if (stmt->row->replica_id == 0) {
 			*local_row++ = stmt->row;
-		else
+		} else {
 			*remote_row++ = stmt->row;
+			is_local = false;
+		}
 
 		req->approx_len += xrow_approx_len(stmt->row);
 	}
+	if (is_sync && is_local)
+		txn_set_flag(txn, TXN_WAIT_ACK);
 
 	assert(remote_row == req->rows + txn->n_applier_rows);
 	assert(local_row == remote_row + txn->n_new_rows);
