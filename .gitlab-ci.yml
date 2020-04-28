@@ -226,10 +226,10 @@ perf_cbench:
   artifacts:
     when: always
     paths:
-      - cbench.memtx.tree_result.txt
-      - cbench.memtx.hash_result.txt
-      - cbench.vinyl.fsync_result.txt
-      - cbench.vinyl.write_result.txt
+      - cbench-memtx-tree_result.txt
+      - cbench-memtx-hash_result.txt
+      - cbench-vinyl-fsync_result.txt
+      - cbench-vinyl-write_result.txt
       - cbench_t_version.txt
 
 perf_nosqlbench_hash:
@@ -241,8 +241,8 @@ perf_nosqlbench_hash:
   artifacts:
     when: always
     paths:
-      - nosqlbench.hash_result.txt
-      - nosqlbench.hash_t_version.txt
+      - noSQLbench.hash_result.txt
+      - noSQLbench.hash_t_version.txt
 
 perf_nosqlbench_tree:
   <<: *perf_docker_test_definition
@@ -253,8 +253,8 @@ perf_nosqlbench_tree:
   artifacts:
     when: always
     paths:
-      - nosqlbench.tree_result.txt
-      - nosqlbench.tree_t_version.txt
+      - noSQLbench.tree_result.txt
+      - noSQLbench.tree_t_version.txt
 
 perf_ycsb_hash:
   <<: *perf_docker_test_definition
