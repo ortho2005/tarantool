@@ -92,7 +92,7 @@ variables:
   image: ${IMAGE_PERF_BUILT}
   stage: perf
   tags:
-    - docker_dev4_perf
+    - docker_dev3_perf
   script:
     - ${GITLAB_MAKE} perf_run
 
