@@ -29,6 +29,7 @@
  * SUCH DAMAGE.
  */
 #include "txn.h"
+#include "txn_limbo.h"
 #include "engine.h"
 #include "tuple.h"
 #include "journal.h"
@@ -432,7 +433,7 @@ txn_complete(struct txn *txn)
 			engine_rollback(txn->engine, txn);
 		if (txn_has_flag(txn, TXN_HAS_TRIGGERS))
 			txn_run_rollback_triggers(txn, &txn->on_rollback);
-	} else {
+	} else if (!txn_has_flag(txn, TXN_WAIT_ACK)) {
 		/* Commit the transaction. */
 		if (txn->engine != NULL)
 			engine_commit(txn->engine, txn);
@@ -447,6 +448,19 @@ txn_complete(struct txn *txn)
 					     txn->signature - n_rows + 1,
 					     stop_tm - txn->start_tm);
 		}
+	} else {
+		/*
+		 * Complete is called on every WAL operation
+		 * authored by this transaction. And it not always
+		 * is one. And not always is enough for commit.
+		 * In case the transaction is waiting for acks, it
+		 * can't be committed right away. Give control
+		 * back to the fiber, owning the transaction so as
+		 * it could decide what to do next.
+		 */
+		if (txn->fiber != fiber())
+			fiber_wakeup(txn->fiber);
+		return;
 	}
 	/*
 	 * If there is no fiber waiting for the transaction then
@@ -633,6 +647,7 @@ int
 txn_commit(struct txn *txn)
 {
 	struct journal_entry *req;
+	struct txn_limbo_entry *limbo_entry;
 
 	txn->fiber = fiber();
 
@@ -654,8 +669,25 @@ txn_commit(struct txn *txn)
 		return -1;
 	}
 
+	bool is_sync = txn_has_flag(txn, TXN_WAIT_ACK);
+	if (is_sync) {
+		/*
+		 * Append now. Before even WAL write is done.
+		 * After WAL write nothing should fail, even OOM
+		 * wouldn't be acceptable.
+		 */
+		limbo_entry = txn_limbo_append(&txn_limbo, txn);
+		if (limbo_entry == NULL) {
+			txn_rollback(txn);
+			txn_free(txn);
+			return -1;
+		}
+	}
+
 	fiber_set_txn(fiber(), NULL);
 	if (journal_write(req) != 0) {
+		if (is_sync)
+			txn_limbo_abort(&txn_limbo, limbo_entry);
 		fiber_set_txn(fiber(), txn);
 		txn_rollback(txn);
 		txn_free(txn);
@@ -664,7 +696,11 @@ txn_commit(struct txn *txn)
 		diag_log();
 		return -1;
 	}
-
+	if (is_sync) {
+		txn_limbo_assign_lsn(&txn_limbo, limbo_entry,
+				     req->rows[req->n_rows - 1]->lsn);
+		txn_limbo_wait_complete(&txn_limbo, limbo_entry);
+	}
 	if (!txn_has_flag(txn, TXN_IS_DONE)) {
 		txn->signature = req->res;
 		txn_complete(txn);
