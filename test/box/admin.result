@@ -79,6 +79,8 @@ cfg_filter(box.cfg)
     - false
   - - replication_sync_lag
     - 10
+  - - replication_sync_quorum
+    - 1
   - - replication_sync_timeout
     - 300
   - - replication_timeout

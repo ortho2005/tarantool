@@ -126,6 +126,12 @@ extern int replication_connect_quorum;
 extern double replication_sync_lag;
 
 /**
+ * Minimal number of replicas to confirm a synchronous transaction
+ * is applied on to be able to finish its commit.
+ */
+extern int replication_sync_quorum;
+
+/**
  * Max time to wait for appliers to synchronize before entering
  * the orphan mode.
  */
