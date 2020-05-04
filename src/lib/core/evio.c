@@ -175,10 +175,15 @@ evio_service_accept_cb(ev_loop *loop, ev_io *watcher, int events)
 	int fd;
 	while (1) {
 		/*
-		 * Accept all pending connections from backlog during event
-		 * loop iteration. Significally speed up acceptor with enabled
+		 * Accept all pending connections from backlog
+		 * during event loop iteration while there are
+		 * enough available descriptors. Significantly
+		 * speed up acceptor with enabled
 		 * io_collect_interval.
 		 */
+		if (used_descriptors_ratio() > 0.8) {
+			continue;
+		}
 		struct sockaddr_storage addr;
 		socklen_t addrlen = sizeof(addr);
 		fd = sio_accept(service->ev.fd, (struct sockaddr *)&addr,

@@ -36,6 +36,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <poll.h>
 #include <sys/resource.h>
 #include <sys/time.h>
 #include <time.h>
@@ -386,4 +387,22 @@ double_compare_uint64(double lhs, uint64_t rhs, int k)
 	 * number.
 	 */
 	return -k;
+}
+
+double
+used_descriptors_ratio()
+{
+	struct rlimit nofile;
+	getrlimit(RLIMIT_NOFILE, &nofile);
+	struct pollfd fds[nofile.rlim_cur];
+	for (size_t i = 0; i < nofile.rlim_cur; i++) {
+		fds[i].fd = i;
+		fds[i].events = 0;
+	}
+	poll(fds, nofile.rlim_cur, 0);
+	size_t used = 0;
+	for (size_t i = 0; i < nofile.rlim_cur; i++)
+		if ((fds[i].revents & POLLNVAL) == 0)
+			used++;
+	return (double)used / nofile.rlim_cur;
 }
