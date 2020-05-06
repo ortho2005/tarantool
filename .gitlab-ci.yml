@@ -91,8 +91,6 @@ variables:
   <<: *perf_only_definition
   image: ${IMAGE_PERF_BUILT}
   stage: perf
-  tags:
-    - docker_perf
   script:
     - ${GITLAB_MAKE} perf_run
 
@@ -190,7 +188,7 @@ perf_bootstrap:
   <<: *perf_only_definition
   stage: test
   tags:
-    - perf
+    - deploy
   script:
     - ${GITLAB_MAKE} perf_prepare
 
@@ -198,57 +196,111 @@ perf_bootstrap:
 
 perf_sysbench:
   <<: *perf_docker_test_definition
+  tags:
+    - docker_perf
   variables:
     <<: *perf_vars_definition
     BENCH: 'sysbench'
+  artifacts:
+    when: always
+    paths:
+      - "*_result.txt"
+      - "*_t_version.txt"
 
 perf_tpcc:
   <<: *perf_docker_test_definition
+  tags:
+    - docker_perf
   variables:
     <<: *perf_vars_definition
     BENCH: 'tpcc'
+  artifacts:
+    when: always
+    paths:
+      - "*_result.txt"
+      - "*_t_version.txt"
 
 perf_ycsb_hash:
   <<: *perf_docker_test_definition
+  tags:
+    - docker_sh2_perf
   variables:
     <<: *perf_vars_definition
     BENCH: 'ycsb'
     ARG: 'hash'
+  artifacts:
+    when: always
+    paths:
+      - "*_result.txt"
+      - "*_t_version.txt"
 
 perf_ycsb_tree:
   <<: *perf_docker_test_definition
+  tags:
+    - docker_sh2_perf
   variables:
     <<: *perf_vars_definition
     BENCH: 'ycsb'
     ARG: 'tree'
+  artifacts:
+    when: always
+    paths:
+      - "*_result.txt"
+      - "*_t_version.txt"
 
 perf_nosqlbench_hash:
   <<: *perf_docker_test_definition
+  tags:
+    - docker_sh1_perf
   variables:
     <<: *perf_vars_definition
     BENCH: 'nosqlbench'
     ARG: 'hash'
+  artifacts:
+    when: always
+    paths:
+      - "*_result.txt"
+      - "*_t_version.txt"
 
 perf_nosqlbench_tree:
   <<: *perf_docker_test_definition
+  tags:
+    - docker_sh1_perf
   variables:
     <<: *perf_vars_definition
     BENCH: 'nosqlbench'
     ARG: 'tree'
+  artifacts:
+    when: always
+    paths:
+      - "*_result.txt"
+      - "*_t_version.txt"
 
 perf_cbench:
   <<: *perf_docker_test_definition
+  tags:
+    - docker_sh2_perf
   variables:
     <<: *perf_vars_definition
     BENCH: 'cbench'
+  artifacts:
+    when: always
+    paths:
+      - "*_result.txt"
+      - "*_t_version.txt"
 
-perf_linkbench_ssd:
+perf_cbench:
   <<: *perf_docker_test_definition
   tags:
     - docker_perf_ssd
   variables:
     <<: *perf_vars_definition
     BENCH: 'linkbench'
+  artifacts:
+    when: always
+    paths:
+      - "*_result.txt"
+      - "*_t_version.txt"
 
 # Post-testing part
 
