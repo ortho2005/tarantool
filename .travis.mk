@@ -3,7 +3,7 @@
 #
 
 DOCKER_IMAGE?=packpack/packpack:debian-stretch
-TEST_RUN_EXTRA_PARAMS?=
+TEST_RUN_EXTRA_PARAMS?=box-py
 MAX_FILES?=65534
 MAX_PROC?=2500
 
@@ -82,6 +82,9 @@ build_debian:
 
 test_debian_no_deps: build_debian
 	cd test && /usr/bin/python test-run.py --force $(TEST_RUN_EXTRA_PARAMS)
+	cd .. && git clone https://github.com/tarantool/tarantool-python.git tarantool-python
+	pip install --user git+https://github.com/tarantool/tarantool-python.git@master
+	cd tarantool-python && python setup.py test
 
 test_debian: deps_debian test_debian_no_deps
 
