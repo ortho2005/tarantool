@@ -947,10 +947,11 @@ say_format_syslog(struct log *log, char *buf, int len, int level, const char *fi
 
 	/* Format syslog header according to RFC */
 	int prio = level_to_syslog_priority(level);
-/*
+#if defined(__OpenBSD__)
+#define LOG_MAKEPRI(fac, pri)        (((fac) << 3) | (pri))
+#endif
 	SNPRINT(total, snprintf, buf, len, "<%d>",
 		LOG_MAKEPRI(8 * log->syslog_facility, prio));
-*/
 	SNPRINT(total, strftime, buf, len, "%h %e %T ", &tm);
 	SNPRINT(total, snprintf, buf, len, "%s[%d]:", log->syslog_ident, getpid());
 
