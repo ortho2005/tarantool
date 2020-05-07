@@ -82,9 +82,13 @@ build_debian:
 
 test_debian_no_deps: build_debian
 	cd test && /usr/bin/python test-run.py --force $(TEST_RUN_EXTRA_PARAMS)
+	pwd
 	cd .. && git clone https://github.com/tarantool/tarantool-python.git tarantool-python
+	pwd
 	pip install --user git+https://github.com/tarantool/tarantool-python.git@master
-	cd tarantool-python && python setup.py test
+	pwd
+	ls -la
+	cd tarantool-python && /usr/bin/python setup.py test
 
 test_debian: deps_debian test_debian_no_deps
 
