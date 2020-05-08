@@ -157,7 +157,8 @@ test_debian_luacheck:
 	ulimit -a
 	apt update -y
 	apt install -y lua5.1 luarocks
-	luarocks install luacheck ${LANES_ROCKSPEC}
+	luarocks install luacheck
+	luarocks install ${LANES_ROCKSPEC}
 	luacheck --jobs $(getconf _NPROCESSORS_ONLN) --codes --config .luacheckrc .
 
 #######
