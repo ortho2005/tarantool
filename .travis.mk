@@ -67,7 +67,7 @@ deps_debian:
 		python python-pip python-setuptools python-dev \
 		python-msgpack python-yaml python-argparse python-six python-gevent \
 		lcov ruby clang llvm llvm-dev zlib1g-dev autoconf automake libtool \
-		tarantool-devel unzip
+		tarantool-devel
 
 deps_buster_clang_8: deps_debian
 	echo "deb http://apt.llvm.org/buster/ llvm-toolchain-buster-8 main" > /etc/apt/sources.list.d/clang_8.list
