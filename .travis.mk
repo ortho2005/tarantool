@@ -161,7 +161,8 @@ test_debian_luacheck:
 	#pip install hererocks setuptools wheel bdist-wheel-name
 	#hererocks lua51 -l5.1 -rlatest
 	#source lua51/bin/activate
-	apt install -y liblua5.1-dev lua5.1 luarocks
+	apt update -y
+	apt install -y lua5.1 luarocks
 	luarocks install luacheck
 	luarocks install ${LANES_ROCKSPEC}
 	luacheck --version
