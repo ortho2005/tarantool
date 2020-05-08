@@ -154,13 +154,14 @@ test_static_docker_build:
 # ###################
 
 test_debian_luacheck:
-	whereis unzip || true
-	echo $PATH
-	export PATH=$PATH:/usr/bin
-	/usr/bin/unzip
-	pip install hererocks setuptools bdist_wheel wheel
-	hererocks lua51 -l5.1 -rlatest
-	source lua51/bin/activate
+	#whereis unzip || true
+	#echo $PATH
+	#export PATH=$PATH:/usr/bin
+	#/usr/bin/unzip
+	#pip install hererocks setuptools wheel bdist-wheel-name
+	#hererocks lua51 -l5.1 -rlatest
+	#source lua51/bin/activate
+	apt install -y liblua5.1-dev lua5.1 luarocks
 	luarocks install luacheck
 	luarocks install ${LANES_ROCKSPEC}
 	luacheck --version
