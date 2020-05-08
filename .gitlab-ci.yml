@@ -102,6 +102,8 @@ variables:
 luacheck:
   <<: *docker_test_definition
   stage: static_analysis
+  tags:
+    - docker_test_capadd
   script:
     - ${GITLAB_MAKE} test_debian_luacheck
 
