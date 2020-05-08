@@ -91,8 +91,6 @@ variables:
   <<: *perf_only_definition
   image: ${IMAGE_PERF_BUILT}
   stage: perf
-  tags:
-    - docker_perf
   artifacts:
     when: always
     paths:
@@ -195,7 +193,7 @@ perf_bootstrap:
   <<: *perf_only_definition
   stage: test
   tags:
-    - perf
+    - deploy
   script:
     - ${GITLAB_MAKE} perf_prepare
 
@@ -203,18 +201,24 @@ perf_bootstrap:
 
 perf_sysbench:
   <<: *perf_docker_test_definition
+  tags:
+    - docker_perf
   variables:
     <<: *perf_vars_definition
     BENCH: 'sysbench'
 
 perf_tpcc:
   <<: *perf_docker_test_definition
+  tags:
+    - docker_perf
   variables:
     <<: *perf_vars_definition
     BENCH: 'tpcc'
 
 perf_ycsb_hash:
   <<: *perf_docker_test_definition
+  tags:
+    - docker_sh2_perf
   variables:
     <<: *perf_vars_definition
     BENCH: 'ycsb'
@@ -222,6 +226,8 @@ perf_ycsb_hash:
 
 perf_ycsb_tree:
   <<: *perf_docker_test_definition
+  tags:
+    - docker_sh2_perf
   variables:
     <<: *perf_vars_definition
     BENCH: 'ycsb'
@@ -229,6 +235,8 @@ perf_ycsb_tree:
 
 perf_nosqlbench_hash:
   <<: *perf_docker_test_definition
+  tags:
+    - docker_sh1_perf
   variables:
     <<: *perf_vars_definition
     BENCH: 'nosqlbench'
@@ -236,6 +244,8 @@ perf_nosqlbench_hash:
 
 perf_nosqlbench_tree:
   <<: *perf_docker_test_definition
+  tags:
+    - docker_sh1_perf
   variables:
     <<: *perf_vars_definition
     BENCH: 'nosqlbench'
@@ -243,6 +253,8 @@ perf_nosqlbench_tree:
 
 perf_cbench:
   <<: *perf_docker_test_definition
+  tags:
+    - docker_sh2_perf
   variables:
     <<: *perf_vars_definition
     BENCH: 'cbench'
