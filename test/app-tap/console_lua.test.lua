@@ -122,6 +122,16 @@ local cases = {
         input       = '1, nil, box.NULL, nil',
         expected    = '1, nil, box.NULL, nil',
     }, {
+        name        = 'ULL constants, multireturn',
+        opts        = {block = false},
+        input       = '-1ULL, -2ULL, 1ULL, 2ULL',
+        expected    = '18446744073709551615, 18446744073709551614, 1, 2',
+    }, {
+        name        = 'ULL key',
+        opts        = {block = false},
+        input       = '{[-1ULL] = 1}',
+        expected    = '{[18446744073709551615] = 1}',
+    }, {
         name        = 'empty output',
         input       = '\\set output',
         expected    = '{error = \"Specify output format: lua or yaml.\"}',
