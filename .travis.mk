@@ -154,7 +154,7 @@ test_static_docker_build:
 # ###################
 
 test_debian_luacheck:
-	ulimit -r unlimited
+	ulimit -a
 	apt update -y
 	apt install -y lua5.1 luarocks
 	luarocks install luacheck ${LANES_ROCKSPEC}
